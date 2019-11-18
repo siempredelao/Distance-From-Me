@@ -120,6 +120,8 @@ dependencies {
     implementation Dependencies.roomRuntime
     implementation Dependencies.roomKtx
     kapt Dependencies.roomCompiler
+    implementation Dependencies.coroutinesCore
+    implementation Dependencies.coroutinesAndroid
 
     testImplementation TestDependencies.junit
 	testImplementation TestDependencies.mockito
