@@ -368,7 +368,6 @@ class MainActivity :
                 }
                 coordinates.add(point)
                 googleMap?.addMarker(MarkerOptions().position(point))
-
             }
         }
     }

@@ -18,12 +18,8 @@ package gc.david.dfm.dagger
 
 import dagger.Module
 import dagger.Provides
-import gc.david.dfm.executor.Executor
-import gc.david.dfm.executor.MainThread
 import gc.david.dfm.faq.GetFaqsDiskDataSource
-import gc.david.dfm.faq.GetFaqsInteractor
 import gc.david.dfm.faq.GetFaqsRepository
-import gc.david.dfm.faq.GetFaqsUseCase
 import javax.inject.Singleton
 
 /**
@@ -36,14 +32,5 @@ class FaqModule {
     @Singleton
     fun provideGetFaqsRepository(): GetFaqsRepository {
         return GetFaqsDiskDataSource()
-    }
-
-    @Provides
-    @Singleton
-    fun provideGetFaqsUseCase(executor: Executor,
-                              mainThread: MainThread,
-                              getFaqsRepository: GetFaqsRepository
-    ): GetFaqsUseCase {
-        return GetFaqsInteractor(executor, mainThread, getFaqsRepository)
     }
 }

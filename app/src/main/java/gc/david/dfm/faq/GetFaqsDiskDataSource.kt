@@ -16,7 +16,10 @@
 
 package gc.david.dfm.faq
 
+import gc.david.dfm.executor.Either
+import gc.david.dfm.executor.Failure
 import gc.david.dfm.faq.model.Faq
+import kotlinx.coroutines.delay
 
 /**
  * Created by david on 19.12.16.
@@ -42,16 +45,8 @@ class GetFaqsDiskDataSource : GetFaqsRepository {
             Faq("Why my GPS position is not accurate?",
                     "This issue could be related to your device GPS sensor."))
 
-    override fun getFaqs(): Set<Faq> {
-        waitToMakeThisFeatureMoreInteresting()
-        return questionsAndAnswers
-    }
-
-    private fun waitToMakeThisFeatureMoreInteresting() {
-        try {
-            Thread.sleep(500)
-        } catch (e: InterruptedException) {
-            // nothing
-        }
+    override suspend fun getFaqs(): Either<Failure, Set<Faq>> {
+        delay(500L) // pretend we are doing something asynchronous here
+        return Either.Right(questionsAndAnswers)
     }
 }

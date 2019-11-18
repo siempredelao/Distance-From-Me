@@ -16,7 +16,13 @@
 
 package gc.david.dfm.faq
 
+import gc.david.dfm.executor.Failure
 import gc.david.dfm.faq.model.Faq
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Created by david on 21.12.16.
@@ -24,7 +30,12 @@ import gc.david.dfm.faq.model.Faq
 class FaqsPresenter(
         private val faqsView: Faqs.View,
         private val getFaqsUseCase: GetFaqsUseCase
-) : Faqs.Presenter {
+) : Faqs.Presenter, CoroutineScope {
+
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.Main
+
+    private val job = Job()
 
     init {
         this.faqsView.setPresenter(this)
@@ -33,17 +44,23 @@ class FaqsPresenter(
     override fun start() {
         faqsView.showLoading()
 
-        getFaqsUseCase.execute(object : GetFaqsUseCase.Callback {
-            override fun onFaqsLoaded(faqs: Set<Faq>) {
-                faqsView.hideLoading()
-                faqsView.setupList()
-                faqsView.add(faqs)
-            }
+        launch {
+            getFaqsUseCase(this, Unit) { it.either(::handleFailure, ::handleSuccess) }
+        }
+    }
 
-            override fun onError() {
-                faqsView.hideLoading()
-                faqsView.showError()
-            }
-        })
+    private fun handleSuccess(faqs: Set<Faq>) {
+        with(faqsView) {
+            hideLoading()
+            setupList()
+            add(faqs)
+        }
+    }
+
+    private fun handleFailure(failure: Failure) {
+        with(faqsView) {
+            hideLoading()
+            showError()
+        }
     }
 }

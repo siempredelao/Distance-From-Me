@@ -16,20 +16,20 @@
 
 package gc.david.dfm.faq
 
+import gc.david.dfm.executor.CoInteractor
+import gc.david.dfm.executor.Either
+import gc.david.dfm.executor.Failure
 import gc.david.dfm.faq.model.Faq
+import javax.inject.Inject
 
 /**
  * Created by david on 17.12.16.
  */
-interface GetFaqsUseCase {
+class GetFaqsUseCase @Inject constructor(
+        private val repository: GetFaqsRepository
+) : CoInteractor<Set<Faq>, Unit>() {
 
-    interface Callback {
-
-        fun onFaqsLoaded(faqs: Set<Faq>)
-
-        fun onError()
-
+    override suspend fun run(params: Unit): Either<Failure, Set<Faq>> {
+        return repository.getFaqs()
     }
-
-    fun execute(callback: Callback)
 }

@@ -16,6 +16,8 @@
 
 package gc.david.dfm.faq
 
+import gc.david.dfm.executor.Either
+import gc.david.dfm.executor.Failure
 import gc.david.dfm.faq.model.Faq
 
 /**
@@ -23,6 +25,6 @@ import gc.david.dfm.faq.model.Faq
  */
 interface GetFaqsRepository {
 
-    fun getFaqs(): Set<Faq>
+    suspend fun getFaqs(): Either<Failure, Set<Faq>>
 
 }

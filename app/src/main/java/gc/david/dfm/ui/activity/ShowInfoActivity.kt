@@ -101,7 +101,6 @@ class ShowInfoActivity : AppCompatActivity(), ShowInfo.View {
         setSupportActionBar(tbMain)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        // TODO: 06.02.17 store presenter in singleton Map, Loader,... to restore after config change
         showInfoPresenter = ShowInfoPresenter(this,
                 getOriginAddressNameByCoordinatesUseCase,
                 getDestinationAddressNameByCoordinatesUseCase,
