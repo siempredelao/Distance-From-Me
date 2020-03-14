@@ -14,3 +14,4 @@ app/src/main/res/values/other.xml
 app/src/debug/res/values/other.xml
 app/src/beta/res/values/other.xml
 app/crashlytics.properties
+app/google-services.json

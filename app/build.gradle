@@ -119,11 +119,16 @@ dependencies {
     implementation Dependencies.roomRuntime
     implementation Dependencies.roomKtx
     kapt Dependencies.roomCompiler
+	implementation 'com.google.firebase:firebase-core:17.2.3'
+	implementation 'com.google.firebase:firebase-config:19.1.2'
+	implementation 'com.google.firebase:firebase-config-ktx:19.1.2'
 
-    testImplementation TestDependencies.junit
+	testImplementation TestDependencies.junit
 	testImplementation TestDependencies.mockito
     testImplementation TestDependencies.mockitoInline
     testImplementation TestDependencies.mockitoKotlin
     testImplementation Dependencies.leakCanaryNoOp
 }
 
+// This plugin should be defined at the end of this file, regarding docs
+apply plugin: 'com.google.gms.google-services'
