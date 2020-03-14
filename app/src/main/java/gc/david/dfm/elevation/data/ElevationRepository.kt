@@ -17,6 +17,8 @@
 package gc.david.dfm.elevation.data
 
 import gc.david.dfm.elevation.data.model.ElevationEntity
+import gc.david.dfm.executor.Either
+import gc.david.dfm.executor.Failure
 
 /**
  * Created by david on 05.01.17.
@@ -31,5 +33,8 @@ interface ElevationRepository {
 
     }
 
-    fun getElevation(coordinatesPath: String, maxSamples: Int, callback: Callback)
+    suspend fun getElevation(
+            coordinatesPath: String,
+            maxSamples: Int
+    ): Either<Failure, ElevationEntity>
 }

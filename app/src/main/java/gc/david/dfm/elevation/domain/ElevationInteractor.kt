@@ -17,65 +17,54 @@
 package gc.david.dfm.elevation.domain
 
 import com.google.android.gms.maps.model.LatLng
-
 import gc.david.dfm.elevation.data.ElevationRepository
 import gc.david.dfm.elevation.data.mapper.ElevationEntityDataMapper
 import gc.david.dfm.elevation.data.model.ElevationEntity
 import gc.david.dfm.elevation.data.model.ElevationStatus
-import gc.david.dfm.executor.Executor
-import gc.david.dfm.executor.Interactor
-import gc.david.dfm.executor.MainThread
+import gc.david.dfm.elevation.domain.ElevationInteractor.Params
+import gc.david.dfm.elevation.domain.model.Elevation
+import gc.david.dfm.executor.CoInteractor
+import gc.david.dfm.executor.Either
+import gc.david.dfm.executor.Failure
+import javax.inject.Inject
 
 /**
  * Created by david on 05.01.17.
  */
-class ElevationInteractor(
-        private val executor: Executor,
-        private val mainThread: MainThread,
+class ElevationInteractor @Inject constructor(
         private val mapper: ElevationEntityDataMapper,
         private val repository: ElevationRepository
-) : Interactor, ElevationUseCase {
+) : CoInteractor<Elevation, Params>() {
 
-    private lateinit var callback: ElevationUseCase.Callback
-    private lateinit var coordinateList: List<LatLng>
-    private var maxSamples: Int = 0
-
-    override fun execute(coordinateList: List<LatLng>, maxSamples: Int, callback: ElevationUseCase.Callback) {
-        this.coordinateList = coordinateList
-        this.maxSamples = maxSamples
-        this.callback = callback
-        this.executor.run(this)
-    }
-
-    override fun run() {
-        if (coordinateList.isEmpty()) {
-            notifyError("Empty coordinates list")
+    override suspend fun run(params: Params): Either<Failure, Elevation> {
+        if (params.coordinateList.isEmpty()) {
+            return Either.Left(ElevationFailure.EmptyList())
         } else {
-            val coordinatesPath = getCoordinatesPath(coordinateList)
+            val coordinatesPath = getCoordinatesPath(params.coordinateList)
 
-            repository.getElevation(coordinatesPath, maxSamples, object : ElevationRepository.Callback {
-                override fun onSuccess(elevationEntity: ElevationEntity) {
-                    if (ElevationStatus.OK == elevationEntity.status) {
-                        val elevation = mapper.transform(elevationEntity)
-
-                        mainThread.post(Runnable { callback.onElevationLoaded(elevation) })
-                    } else {
-                        notifyError(elevationEntity.status.toString())
-                    }
-                }
-
-                override fun onError(message: String) {
-                    notifyError(message)
-                }
-            })
+            repository.getElevation("", 1).
+            return repository.getElevation(coordinatesPath, params.maxSamples)
+                    .either({
+                        Either.Left(Failure.ServerError)
+                    }, {
+                        if (ElevationStatus.OK == it.status) {
+                            val elevation = mapper.transform(it)
+                            Either.Right(elevation)
+                        } else {
+                            Either.Left(it.status.toString())
+                        }
+                    })
         }
-    }
-
-    private fun notifyError(errorMessage: String) {
-        mainThread.post(Runnable { callback.onError(errorMessage) })
     }
 
     private fun getCoordinatesPath(coordinateList: List<LatLng>): String {
         return coordinateList.joinToString("|") { "${it.latitude},${it.longitude}" }
+    }
+
+    data class Params(val coordinateList: List<LatLng>, val maxSamples: Int)
+
+    sealed class ElevationFailure : Failure.FeatureFailure() {
+
+        class EmptyList: FeatureFailure()
     }
 }

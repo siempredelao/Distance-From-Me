@@ -20,6 +20,8 @@ import android.content.Context
 import com.google.gson.Gson
 import gc.david.dfm.R
 import gc.david.dfm.elevation.data.model.ElevationEntity
+import gc.david.dfm.executor.Either
+import gc.david.dfm.executor.Failure
 import gc.david.dfm.logger.DFMLogger
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -34,21 +36,24 @@ class ElevationRemoteDataSource(context: Context) : ElevationRepository {
     private val gson = Gson()
     private val geocodeApiKey: String = context.resources.getString(R.string.maps_geocode_api_key)
 
-    override fun getElevation(coordinatesPath: String, maxSamples: Int, callback: ElevationRepository.Callback) {
+    override suspend fun getElevation(
+            coordinatesPath: String,
+            maxSamples: Int
+    ): Either<Failure, ElevationEntity> {
         val urlNoKey = "https://maps.googleapis.com/maps/api/elevation/json?path=$coordinatesPath&samples=$maxSamples"
         DFMLogger.logMessage("ElevationRemoteDataSource", urlNoKey)
         val url = "$urlNoKey&key=$geocodeApiKey"
         val request = Request.Builder().url(url)
                 .header("content-type", "application/json")
                 .build()
-        try {
+
+        return try {
             val response = client.newCall(request).execute()
             val elevationEntity =
                     gson.fromJson(response.body()!!.charStream(), ElevationEntity::class.java)
-            callback.onSuccess(elevationEntity)
+            Either.Right(elevationEntity)
         } catch (exception: IOException) {
-            callback.onError(exception.message ?: "ElevationRemoteDataSource error")
+            Either.Left(Failure.ServerError)
         }
-
     }
 }
