@@ -46,6 +46,7 @@ import gc.david.dfm.initializers.DefaultUnitInitializer
 import gc.david.dfm.initializers.FirebaseInitializer
 import gc.david.dfm.initializers.Initializers
 import gc.david.dfm.initializers.LoggingInitializer
+import gc.david.dfm.main.presentation.MainViewModel
 import gc.david.dfm.opensource.data.BaseOpenSourceRepository
 import gc.david.dfm.opensource.data.OpenSourceDiskDataSource
 import gc.david.dfm.opensource.domain.OpenSourceInteractor
@@ -78,6 +79,7 @@ val viewModelModule = module {
     viewModel { SaveDistanceViewModel(get(), get()) }
     viewModel { ElevationViewModel(get(), get(), get()) }
     viewModel { AddressViewModel(get(), get(), get(), get()) }
+    viewModel { MainViewModel(get(), get(), get(), get()) }
 }
 
 val useCaseModule = module {

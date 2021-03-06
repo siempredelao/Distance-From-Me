@@ -30,11 +30,13 @@
         android:id="@+id/action_load"
         android:orderInCategory="2"
         android:title="@string/menu_load_title"
+        android:visible="false"
         app:showAsAction="never"/>
     <item
         android:id="@+id/action_crash"
         android:orderInCategory="3"
         android:title="Crash"
+        android:visible="false"
         app:showAsAction="never"
         tools:ignore="HardcodedText" />
 </menu>

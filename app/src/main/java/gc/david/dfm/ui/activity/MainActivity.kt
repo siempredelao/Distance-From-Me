@@ -50,11 +50,9 @@ import gc.david.dfm.adapter.MarkerInfoWindowAdapter
 import gc.david.dfm.adapter.systemService
 import gc.david.dfm.address.presentation.AddressViewModel
 import gc.david.dfm.database.Distance
-import gc.david.dfm.database.Position
 import gc.david.dfm.databinding.ActivityMainBinding
-import gc.david.dfm.distance.domain.GetPositionListInteractor
-import gc.david.dfm.distance.domain.LoadDistancesInteractor
 import gc.david.dfm.elevation.presentation.ElevationViewModel
+import gc.david.dfm.main.presentation.MainViewModel
 import gc.david.dfm.map.Haversine
 import gc.david.dfm.service.GeofencingService
 import gc.david.dfm.ui.animation.AnimatorUtil
@@ -77,9 +75,8 @@ class MainActivity :
 
     val appContext: Context by inject()
     val connectionManager: ConnectionManager by inject()
-    val loadDistancesUseCase: LoadDistancesInteractor by inject()
-    val getPositionListUseCase: GetPositionListInteractor by inject()
 
+    private val mainViewModel: MainViewModel by viewModel()
     private val elevationViewModel: ElevationViewModel by viewModel()
     private val addressViewModel: AddressViewModel by viewModel()
 
@@ -102,7 +99,6 @@ class MainActivity :
     // Moves to current position if app has just started
     private var appHasJustStarted = true
     private var distanceMeasuredAsText = ""
-    private var searchMenuItem: MenuItem? = null
     // Show position if we come from other app (p.e. Whatsapp)
     private var mustShowPositionWhenComingFromOutside = false
     private var sendDestinationPosition: LatLng? = null
@@ -235,6 +231,26 @@ class MainActivity :
         }
 
         handleIntents(intent)
+
+        with(mainViewModel) {
+            showLoadDistancesItem.observe(this@MainActivity, { visible ->
+                val loadItem = binding.tbMain.tbMain.menu.findItem(R.id.action_load)
+                loadItem?.isVisible = visible
+            })
+            showForceCrashItem.observe(this@MainActivity, { visible ->
+                val crashItem = binding.tbMain.tbMain.menu.findItem(R.id.action_crash)
+                crashItem?.isVisible = visible
+            })
+            selectFromDistancesLoaded.observe(this@MainActivity, { event ->
+                event.getContentIfNotHandled()?.let { showLoadedDistancesDialog(it) }
+            })
+            drawDistance.observe(this@MainActivity, { model ->
+                coordinates.clear()
+                coordinates.addAll(Utils.convertPositionListToLatLngList(model.positionList))
+
+                drawAndShowMultipleDistances(coordinates, model.distanceName + "\n", true)
+            })
+        }
     }
 
     override fun onMapReady(map: GoogleMap) {
@@ -393,7 +409,7 @@ class MainActivity :
         if (currentLocation != null) {
             addressViewModel.onAddressSearch(query)
         }
-        searchMenuItem?.collapseActionView()
+        binding.tbMain.tbMain.menu.findItem(R.id.action_search).collapseActionView()
     }
 
     private fun handleViewPositionIntent(intent: Intent) {
@@ -423,7 +439,7 @@ class MainActivity :
 
                     // TODO check this ugly workaround
                     addressViewModel.onAddressSearch(destination)
-                    searchMenuItem?.collapseActionView()
+                    binding.tbMain.tbMain.menu.findItem(R.id.action_search).collapseActionView()
                     mustShowPositionWhenComingFromOutside = true
                 }
             } else { // Manage geo:latitude,longitude or geo:latitude,longitude?z=zoom
@@ -479,10 +495,9 @@ class MainActivity :
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main, menu)
 
-        searchMenuItem = menu.findItem(R.id.action_search).apply {
+        menu.findItem(R.id.action_search).apply {
             with(actionView as SearchView) {
                 val searchManager = systemService<SearchManager>(Context.SEARCH_SERVICE)
-                // Indicamos que la activity actual sea la buscadora
                 setSearchableInfo(searchManager.getSearchableInfo(componentName))
                 isSubmitButtonEnabled = false
                 isQueryRefinementEnabled = true
@@ -490,23 +505,12 @@ class MainActivity :
             }
         }
 
-        // TODO: 16.01.17 move this to presenter
-        val loadItem = menu.findItem(R.id.action_load)
-        loadDistancesUseCase.execute(object : LoadDistancesInteractor.Callback {
-            override fun onDistanceListLoaded(distanceList: List<Distance>) {
-                if (distanceList.isEmpty()) {
-                    loadItem.isVisible = false
-                }
-            }
-
-            override fun onError() {
-                loadItem.isVisible = false
-            }
-        })
-
-        menu.findItem(R.id.action_crash).isVisible = !Utils.isReleaseBuild()
-
         return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        mainViewModel.onMenuReady()
+        return super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -522,12 +526,13 @@ class MainActivity :
             }
             R.id.action_load -> {
                 Timber.tag(TAG).d("onOptionsItemSelected load distances from ddbb")
-                loadDistancesFromDB()
+                mainViewModel.onLoadDistancesClick()
                 return true
             }
             R.id.action_crash -> {
                 Timber.tag(TAG).d("onOptionsItemSelected crash")
-                throw RuntimeException("User forced crash")
+                mainViewModel.onForceCrashClick()
+                return true
             }
             else -> return super.onOptionsItemSelected(item)
         }
@@ -541,36 +546,16 @@ class MainActivity :
         }
     }
 
-    private fun loadDistancesFromDB() {
-        // TODO: 16.01.17 move this to presenter
-        loadDistancesUseCase.execute(object : LoadDistancesInteractor.Callback {
-            override fun onDistanceListLoaded(distanceList: List<Distance>) {
-                if (distanceList.isNotEmpty()) {
-                    val distanceSelectionDialogFragment = DistanceSelectionDialogFragment()
-                    distanceSelectionDialogFragment.setDistanceList(distanceList)
-                    distanceSelectionDialogFragment.setOnDialogActionListener { position ->
-                        val distance = distanceList[position]
-                        getPositionListUseCase.execute(distance.id!!, object : GetPositionListInteractor.Callback {
-                            override fun onPositionListLoaded(positionList: List<Position>) {
-                                coordinates.clear()
-                                coordinates.addAll(Utils.convertPositionListToLatLngList(positionList))
-
-                                drawAndShowMultipleDistances(coordinates, distance.name + "\n", true)
-                            }
-
-                            override fun onError() {
-                                Timber.tag(TAG).e(Exception("Unable to get position by id."))
-                            }
-                        })
+    private fun showLoadedDistancesDialog(distances: List<Distance>) {
+        DistanceSelectionDialogFragment()
+                .apply {
+                    setDistanceList(distances)
+                    setOnDialogActionListener { position ->
+                        val distance = distances[position]
+                        mainViewModel.onDistanceToShowSelected(distance)
                     }
-                    distanceSelectionDialogFragment.show(supportFragmentManager, null)
                 }
-            }
-
-            override fun onError() {
-                Timber.tag(TAG).e(Exception("Unable to load distances."))
-            }
-        })
+                .show(supportFragmentManager, null)
     }
 
     private fun showRateDialog() {
@@ -637,14 +622,9 @@ class MainActivity :
         }
     }
 
-    /**
-     * Called when the system detects that this Activity is now visible.
-     */
     public override fun onResume() {
-        Timber.tag(TAG).d("onResume")
-
         super.onResume()
-        invalidateOptionsMenu()
+        mainViewModel.onResume()
     }
 
     public override fun onDestroy() {
