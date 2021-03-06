@@ -46,7 +46,18 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="@+id/tbMain"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tbMain"/>
+            app:layout_constraintTop_toBottomOf="@+id/tbMain" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            android:visibility="gone"
+            app:layout_constraintLeft_toLeftOf="@+id/map2"
+            app:layout_constraintRight_toRightOf="@+id/map2"
+            app:layout_constraintTop_toBottomOf="@+id/tbMain" />
 
         <gc.david.dfm.ui.ElevationChartView
             android:id="@+id/elevationChartView"

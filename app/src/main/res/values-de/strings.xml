@@ -19,8 +19,6 @@
     <string name="action_bar_search_title">Suche</string>
     <string name="action_bar_item_social_share_title">Ort teilen</string>
     <string name="action_bar_search_hint">Distance From Me suchen</string>
-    <string name="progressdialog_search_position_title">Suche im Vorgang</string>
-    <string name="progressdialog_search_position_message">Bitte warten\u2026</string>
     <string name="toast_no_find_address">Dienst inaktiv oder sehr schlechte Netzwerk-Signal. Bitte versuchen Sie es später noch einmal</string>
     <string name="toast_no_results">Keine Daten gefunden.</string>
     <string name="toast_loading_position">Suche Ihrer Position im Vorgang. Bitte warten</string>

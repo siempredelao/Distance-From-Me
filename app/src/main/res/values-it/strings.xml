@@ -19,8 +19,6 @@
     <string name="action_bar_search_title">Circare</string>
     <string name="action_bar_item_social_share_title">Condividiere</string>
     <string name="action_bar_search_hint">Cercare Distance From Me</string>
-    <string name="progressdialog_search_position_title">Cercando</string>
-    <string name="progressdialog_search_position_message">Per favore, aspettare un momento\u2026</string>
     <string name="toast_no_find_address">Servizio inattivo o segnale di rete molto povera. Riprova tra qualche minuto.</string>
     <string name="toast_no_results">Resultati non trovati.</string>
     <string name="toast_loading_position">Cercando posizione, aspettare per favore.</string>

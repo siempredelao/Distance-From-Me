@@ -28,9 +28,6 @@
     <string name="menu_about_title" translatable="false">Open source</string>
     <string name="menu_open_license_browser_title" translatable="false">Open in browser</string>
 
-    <string name="progressdialog_search_position_title">Searching</string>
-    <string name="progressdialog_search_position_message">Please wait\u2026</string>
-
     <string name="toast_loading_position">Searching your position. Please, wait</string>
     <string name="toast_no_find_address">No backend service available or very poor network signal. Try again in a while</string>
     <string name="toast_no_results">No matches were found</string>

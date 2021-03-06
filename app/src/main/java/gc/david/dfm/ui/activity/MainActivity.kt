@@ -19,7 +19,6 @@ package gc.david.dfm.ui.activity
 import android.Manifest.permission.ACCESS_COARSE_LOCATION
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.app.AlertDialog
-import android.app.ProgressDialog
 import android.app.SearchManager
 import android.content.*
 import android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -103,7 +102,6 @@ class MainActivity :
     private var sendDestinationPosition: LatLng? = null
     private val coordinates = ArrayList<LatLng>()
     private var calculatingDistance: Boolean = false
-    private var progressDialog: ProgressDialog? = null
 
     private val selectedDistanceMode: DistanceMode
         get() = if (binding.nvDrawer.menu.findItem(R.id.menu_current_position).isChecked)
@@ -212,7 +210,7 @@ class MainActivity :
                 }
             })
             progressVisibility.observe(this@MainActivity, { visible ->
-                if (visible) showProgressDialog() else hideProgressDialog()
+                binding.progressBar.isVisible = visible
             })
             errorMessage.observe(this@MainActivity, { message ->
                 Utils.toastIt(message, appContext)
@@ -800,22 +798,6 @@ class MainActivity :
     private fun onMyLocationClick() {
         currentLocation?.let {
             googleMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude, it.longitude)))
-        }
-    }
-
-    private fun showProgressDialog() {
-        progressDialog = ProgressDialog(this).apply {
-            setTitle(R.string.progressdialog_search_position_title)
-            setMessage(getString(R.string.progressdialog_search_position_message))
-            setCancelable(false)
-            isIndeterminate = true
-        }
-        progressDialog!!.show()
-    }
-
-    private fun hideProgressDialog() {
-        if (progressDialog?.isShowing == true) {
-            progressDialog!!.dismiss()
         }
     }
 

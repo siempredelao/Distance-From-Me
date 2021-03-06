@@ -19,8 +19,6 @@
     <string name="action_bar_search_title">Rechercher</string>
     <string name="action_bar_item_social_share_title">Partager</string>
     <string name="action_bar_search_hint">Rechercher Distance From Me</string>
-    <string name="progressdialog_search_position_title">Recherche</string>
-    <string name="progressdialog_search_position_message">Attendez, s\'il vous plaît!</string>
     <string name="toast_no_find_address">Le service est inactif ou votre signal de réseau est très pauvre. Veuillez réessayer ultérieurement.</string>
     <string name="toast_no_results">Aucun résultat trouvé avec ces mots. Essayez à nouveau avec des autres mots.</string>
     <string name="toast_loading_position">En recherchant de votre position. Attendez, s\'il vous plaît!</string>

@@ -19,8 +19,6 @@
     <string name="action_bar_search_title">Cercar</string>
     <string name="action_bar_item_social_share_title">Compartir</string>
     <string name="action_bar_search_hint">Cercar Distance From Me</string>
-    <string name="progressdialog_search_position_title">Cercant</string>
-    <string name="progressdialog_search_position_message">Per favor, espere un moment\u2026</string>
     <string name="toast_no_find_address">Servei inactiu o senyal de xarxa molt pobre</string>
     <string name="toast_no_results">No s\'han trobat resultats.</string>
     <string name="toast_loading_position">Cercant la seva posició. Per favor, espere uns instants</string>
