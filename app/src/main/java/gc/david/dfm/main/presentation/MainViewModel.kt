@@ -18,10 +18,8 @@ package gc.david.dfm.main.presentation
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import gc.david.dfm.ConnectionManager
-import gc.david.dfm.Event
-import gc.david.dfm.ResourceProvider
-import gc.david.dfm.Utils
+import gc.david.dfm.*
+import gc.david.dfm.address.presentation.ConnectionIssuesData
 import gc.david.dfm.database.Distance
 import gc.david.dfm.database.Position
 import gc.david.dfm.distance.domain.GetPositionListInteractor
@@ -35,14 +33,25 @@ class MainViewModel(
         private val resourceProvider: ResourceProvider
 ) : ViewModel() {
 
+    val connectionIssueEvent = MutableLiveData<Event<ConnectionIssuesData>>()
     val showLoadDistancesItem = MutableLiveData<Boolean>()
     val showForceCrashItem = MutableLiveData<Boolean>()
     val selectFromDistancesLoaded = MutableLiveData<Event<List<Distance>>>()
     val drawDistance = MutableLiveData<DrawDistanceModel>()
 
     fun onStart() {
-        // TODO
+        if (!connectionManager.isOnline()) {
+            val connectionIssuesData = getConnectionIssuesData()
+            connectionIssueEvent.value = Event(connectionIssuesData)
+        }
     }
+
+    private fun getConnectionIssuesData() = ConnectionIssuesData(
+            resourceProvider.get(R.string.dialog_connection_problems_title),
+            resourceProvider.get(R.string.dialog_connection_problems_message),
+            resourceProvider.get(R.string.dialog_connection_problems_positive_button),
+            resourceProvider.get(R.string.dialog_connection_problems_negative_button)
+    )
 
     fun onResume() {
         // Reloading distances in case a new one was saved into database

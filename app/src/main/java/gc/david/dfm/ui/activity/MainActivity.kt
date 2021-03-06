@@ -74,7 +74,6 @@ class MainActivity :
         GoogleMap.OnInfoWindowClickListener {
 
     val appContext: Context by inject()
-    val connectionManager: ConnectionManager by inject()
 
     private val mainViewModel: MainViewModel by viewModel()
     private val elevationViewModel: ElevationViewModel by viewModel()
@@ -188,6 +187,9 @@ class MainActivity :
 
             nvDrawer.setNavigationItemSelectedListener(onNavigationItemSelectedListener)
             elevationChartView.setOnCloseListener { animateHideChart() }
+
+            val supportMapFragment = supportFragmentManager.findFragmentById(R.id.map2) as SupportMapFragment
+            supportMapFragment.getMapAsync(this@MainActivity)
         }
 
         with(elevationViewModel) {
@@ -222,17 +224,17 @@ class MainActivity :
                 event.getContentIfNotHandled()?.let { showAddressSelectionDialog(it) }
             })
         }
-
-        val supportMapFragment = supportFragmentManager.findFragmentById(R.id.map2) as SupportMapFragment
-        supportMapFragment.getMapAsync(this)
-
-        if (!connectionManager.isOnline()) {
-            showConnectionProblemsDialog()
-        }
-
-        handleIntents(intent)
-
         with(mainViewModel) {
+            connectionIssueEvent.observe(this@MainActivity, { event ->
+                event.getContentIfNotHandled()?.let {
+                    Utils.showAlertDialog(Settings.ACTION_SETTINGS,
+                            it.title,
+                            it.description,
+                            it.positiveMessage,
+                            it.negativeMessage,
+                            this@MainActivity)
+                }
+            })
             showLoadDistancesItem.observe(this@MainActivity, { visible ->
                 val loadItem = binding.tbMain.tbMain.menu.findItem(R.id.action_load)
                 loadItem?.isVisible = visible
@@ -251,6 +253,9 @@ class MainActivity :
                 drawAndShowMultipleDistances(coordinates, model.distanceName + "\n", true)
             })
         }
+        mainViewModel.onStart()
+
+        handleIntents(intent)
     }
 
     override fun onMapReady(map: GoogleMap) {
@@ -796,18 +801,6 @@ class MainActivity :
         currentLocation?.let {
             googleMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(it.latitude, it.longitude)))
         }
-    }
-
-    private fun showConnectionProblemsDialog() {
-        Timber.tag(TAG).d("showConnectionProblemsDialog")
-
-        // TODO duplicated in AddressViewModel :(
-        Utils.showAlertDialog(Settings.ACTION_SETTINGS,
-                R.string.dialog_connection_problems_title,
-                R.string.dialog_connection_problems_message,
-                R.string.dialog_connection_problems_positive_button,
-                R.string.dialog_connection_problems_negative_button,
-                this)
     }
 
     private fun showProgressDialog() {
